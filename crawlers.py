@@ -14,8 +14,8 @@ class Crawlers:
 
     def n4_number_get(self, url, file_name):
         data = []
-        num = self.bs(url)
-        for td in range(3, 20):
+        num, all_number = self.bs(url)
+        for td in range(3, (all_number//344)+5):
             tmp = num[td].text.replace('.', '')
             for i in range(0, len(str(tmp)), 4):
                 try:
@@ -24,12 +24,12 @@ class Crawlers:
                 except:
                     pass
         
-        self.write_csv(data, file_name)
+        self.write_csv(data, file_name, 4)
 
     def n3_number_get(self, url, file_name):
         data = []
-        num = self.bs(url)
-        for td in range(3, 23):
+        num, all_number = self.bs(url)
+        for td in range(3, (all_number//275)+4):
             tmp = num[td].text.replace('.', '')
             for i in range(0, len(str(tmp)), 3):
                 try:
@@ -38,21 +38,38 @@ class Crawlers:
                 except:
                     pass
 
-        self.write_csv(data, file_name)
+        self.write_csv(data, file_name, 3)
 
     def bs(self, url):
         r = requests.get(url)
         soup = BeautifulSoup(r.text, 'lxml')
+        html = BeautifulSoup(r.content, 'html.parser')
         num = soup.find_all('table')
+        all_number = int(str(html.find_all('td')[6])[40:44])
 
-        return num
+        return num, all_number
 
-    def write_csv(self, data, file_name):
+    def write_csv(self, data, file_name, index:int):
         with open(file_name, 'w', newline='') as f:
             writer = csv.writer(f)
-            writer.writerow(['index','num'])
-            for i, column in enumerate(data):
-                writer.writerow([i+1, column])
+            if index == 4:
+                writer.writerow(['index', 'num', 'num1', 'num2', 'num3', 'num4'])
+
+                for i, column in enumerate(data):
+                    num1 = column[0]
+                    num2 = column[1]
+                    num3 = column[2]
+                    num4 = column[3]
+                    writer.writerow([i+1, column, num1, num2, num3, num4])
+
+            elif index == 3:
+                writer.writerow(['index', 'num', 'num1', 'num2', 'num3'])
+            
+                for i, column in enumerate(data):
+                    num1 = column[0]
+                    num2 = column[1]
+                    num3 = column[2]
+                    writer.writerow([i+1, column, num1, num2, num3])
 
 if __name__ == '__main__':
     n4_url = 'http://www.toe.jp/numbers34/n4/code.htm'
